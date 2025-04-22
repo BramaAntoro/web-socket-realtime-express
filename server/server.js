@@ -5,6 +5,7 @@ const path = require('path')
 const http = require('http')
 const { body, validationResult } = require('express-validator')
 const { Sequelize } = require('sequelize')
+const StudentController = require('../controllers/StudentController.js')
 
 const sequelize = new Sequelize({
     database: 'pi_medsos',
@@ -45,51 +46,12 @@ wss.on('close', () => {
     console.log('A client disconnected.')
     clients.delete(ws)
 })
-  
 
-app.get('/', async (req, res) => {
-
-    try {
-        await sequelize.authenticate();
-        console.log('Connection has been established successfully.');
-    } catch (error) {
-        console.error('Unable to connect to the database:', error);
-    }
-    
-    res.send({
-        message: 'Home page'
-    })
-})
-
-app.get('/student', (req, res) => {
-    res.send({
-        message: 'Student page'
-    })
-})
-
-app.post('/student', (req, res)  => {
-    res.send({
-        message: 'Student Created',
-    })
-})
-
-app.delete('/student/:id', (req, res) => {
-    res.send({
-        message: 'Student deleted',
-    })
-})
-
-app.get('/student/:id', (req, res) => {
-    return res.send({
-        message: 'Student detail',
-    })
-})
-
-app.put('/student/:id', (req, res) => {
-    res.send({
-        message: 'Student updated',
-    })
-})
+app.post('/student', StudentController.createStudent)
+app.get('/student', StudentController.getAllStudents)
+app.get('/student/:id', StudentController.getStudentById)
+app.delete('/student/:id', StudentController.deleteStudent)
+app.put('/student/:id', StudentController.updateStudent)
 
 app.post('/send-notification', (req, res) => {
     const notification = req.body;
