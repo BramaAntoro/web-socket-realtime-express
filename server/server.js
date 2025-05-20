@@ -3,17 +3,10 @@ const WebSocket = require('ws')
 const bodyParser = require('body-parser')
 const path = require('path')
 const http = require('http')
-const { body, validationResult } = require('express-validator')
+const { body } = require('express-validator')
 const { Sequelize } = require('sequelize')
-const StudentController = require('../controllers/StudentController.js')
+const cors = require('cors')
 
-const sequelize = new Sequelize({
-    database: 'pi_medsos',
-    username: 'root',
-    password: '',
-    host: 'localhost',
-    dialect: 'mysql'
-})
 
 const app = express()
 app.use(bodyParser.json())
@@ -26,6 +19,14 @@ const port = 3000
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server })
 const clients = new Set()
+const AuthRoutes = require('./routes/authRoutes.js')
+const StudentRoutes = require('./routes/studentRoutes.js')
+const MajorRoutes = require('./routes/majorRoutes.js')
+const PostingRoutes = require('./routes/postingRoutes.js')
+
+const corsOptions = {
+    origin: "http://localhost:5173"
+}
 
 wss.on('connection', (ws) => {
     console.log('A new client connected.')
@@ -47,11 +48,17 @@ wss.on('close', () => {
     clients.delete(ws)
 })
 
-app.post('/student', StudentController.createStudent)
-app.get('/student', StudentController.getAllStudents)
-app.get('/student/:id', StudentController.getStudentById)
-app.delete('/student/:id', StudentController.deleteStudent)
-app.put('/student/:id', StudentController.updateStudent)
+app.use('/v1/auth', cors(corsOptions), AuthRoutes(express))
+app.use('/v1/student', cors(corsOptions), StudentRoutes(express))
+app.use('/v1', cors(corsOptions), MajorRoutes(express))
+app.use('/v1/post', cors(corsOptions), PostingRoutes(express))
+
+// app.post('/student', StudentController.createStudent)
+// app.get('/student', StudentController.getAllStudents)
+// app.get('/student/:id', StudentController.getStudentById)
+// app.delete('/student/:id', StudentController.deleteStudent)
+// app.put('/student/:id', StudentController.updateStudent)
+
 
 app.post('/send-notification', (req, res) => {
     const notification = req.body;
